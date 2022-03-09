@@ -23,7 +23,7 @@ public class Professor implements Runnable{
                     " TTC: " + markInfoHolder.work + ": " + markInfoHolder.start + " Score: " + markInfoHolder.mark);
 
         } catch (InterruptedException | BrokenBarrierException e) {
-            System.out.println("PREKINUT: " + treadName + " Arrival: " + arrivalTime + " Prof: " + Thread.currentThread().getName());
+            System.out.println("Stopped: " + treadName + " Arrival: " + arrivalTime + " Prof: " + Thread.currentThread().getName());
         }
     }
 }
