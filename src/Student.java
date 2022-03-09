@@ -1,15 +1,9 @@
+import java.sql.Time;
 import java.util.Random;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 
 public class Student implements Runnable {
-
-    public static volatile CyclicBarrier assistantBarrier = new CyclicBarrier(1);
-    public static volatile Semaphore assistantSemaphore = new Semaphore(1);
-
-    public static volatile CyclicBarrier professorBarrier = new CyclicBarrier(2);
-    public static volatile Semaphore professorSemaphore = new Semaphore(2);
-
 
     @Override
     public void run() {
@@ -19,31 +13,35 @@ public class Student implements Runnable {
         Random random = new Random();
         int arrivalTime = (int) (random.nextDouble() * 1000);
 
+        //Thread.sleep(arrivalTime);//student dolazi u vreme na intervalu 0-1
+
         try {
-            Thread.sleep(arrivalTime);//student dolazi u vreme na intervalu 0-1
+            Thread arrive = new Thread(new Timer(arrivalTime));
+            arrive.start();
+            arrive.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
-        if (random.nextInt(11) < 5) {//50% sansa da ode kod jednog ili drugog
+        if (random.nextInt(100) % 2 == 1) {//50% sansa da ode kod jednog ili drugog
             try {
-                assistantSemaphore.acquire();
+                Main.globalHolder.assistantSemaphore.acquire();
                 assistantThread = new Thread(new Assistant(Thread.currentThread().getName(), arrivalTime));
                 assistantThread.start();
                 assistantThread.join();
-                assistantSemaphore.release();
+                Main.globalHolder.assistantSemaphore.release();
             }catch (InterruptedException e){
                 if(assistantThread != null) assistantThread.interrupt();
                 System.out.println("Student did not make it in time");
             }
         } else {
             try {
-                professorSemaphore.acquire();
+                Main.globalHolder.professorSemaphore.acquire();
                 professorThread = new Thread(new Professor(Thread.currentThread().getName(), arrivalTime));
                 professorThread.start();
                 professorThread.join();
-                professorSemaphore.release();
+                Main.globalHolder.professorSemaphore.release();
             }catch (InterruptedException e){
                 if(professorThread != null) professorThread.interrupt();
                 System.out.println("Student did not make it in time");

@@ -1,40 +1,38 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
-    public static int totalMark;
-    public static long startTime;
-    public static final String markLock = "markLock";
+    public static GlobalHolder globalHolder = new GlobalHolder();
 
     public static void main(String[] args) throws InterruptedException {
-        ArrayList<Thread> students = new ArrayList<>();
         int studentNumber;
-        int studentNumTmp;
+        int finishedStudentNum = 0;
+        Map<Integer, Thread> students = new HashMap<>();
 
-        System.out.println("Input student number");
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Input student number");
         studentNumber = scanner.nextInt();
-        studentNumTmp = studentNumber;
-        startTime = System.currentTimeMillis();
+        globalHolder.startTime = System.currentTimeMillis();
 
-        Thread timerThread = new Thread(new Timer());
+        Thread timerThread = new Thread(new Timer(5000));
         timerThread.start();//da bi znali kada se zavrsilo 5 sec
 
-        while(studentNumber > 0) {
-            students.add(new Thread(new Student()));
-            students.get(students.size() - 1).start();
-            studentNumber--;
+        for (int i = 0; i < studentNumber; i++) {
+            students.put(i, new Thread(new Student()));
+            students.get(i).start();
         }
 
         timerThread.join();//ceka ovde dok ne prodje 5 sec (pritom idu student threadovi)
 
-        for(Thread student: students){
-            if(student.isAlive()) {
-                studentNumTmp--;
-                student.interrupt();
+        for (int i = 0; i < studentNumber; i++) {
+            if (students.get(i).isAlive()){
+                students.get(i).interrupt();
             }
+            finishedStudentNum++;
         }
 
-        System.out.println("Average mark: " + (totalMark / ((float) studentNumTmp)) );
+        System.out.println("Average mark: " + (GlobalHolder.totalMark / ((float) finishedStudentNum)) );
     }
 }
